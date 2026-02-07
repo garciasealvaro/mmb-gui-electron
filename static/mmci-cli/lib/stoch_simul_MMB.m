@@ -136,8 +136,16 @@ function [base]=stoch_simul_MMB(base)
       oo_.dr=set_state_space(dr,M_);
       [oo_.dr,info] = resol_MMB(0,M_,options_,oo_); %solve
     else  % for dynare versions 4.4.0 or higher
-      oo_.dr=set_state_space(dr,M_,options_);
-      [oo_.dr.nstatic, oo_.dr.npred, oo_.dr.nboth, oo_.dr.nfwrd,oo_.dr.nsfwrd] = get_nvars_state_space(dr,M_);
+      % MMB Compatibility Fix for Dynare 5.0+ and Octave 8.4.0
+      if ~isempty(d_version) && str2double(d_version(1)) >= 5
+        % FIX: Dynare 5+ necesita 2 argumentos: dr y M_ (options_ ya no se usa aquí)
+        oo_.dr = set_state_space(dr, M_);
+      else
+        % Legacy behavior for Dynare 4.4.x - 4.6.x
+        oo_.dr = set_state_space(dr, M_, options_);
+        [oo_.dr.nstatic, oo_.dr.npred, oo_.dr.nboth, oo_.dr.nfwrd, oo_.dr.nsfwrd] = get_nvars_state_space(dr, M_);
+      end
+      % --- End of Fix ---
 
       if (strcmp(dynare_version, '4.4.0') || strcmp(dynare_version, '4.4.1') )
 
